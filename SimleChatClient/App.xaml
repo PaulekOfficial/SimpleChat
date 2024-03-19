@@ -1,0 +1,17 @@
+﻿<Application x:Class="ChatClientGUI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ChatClientGUI"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         <ResourceDictionary>
+             <ResourceDictionary.MergedDictionaries>
+                 <ResourceDictionary Source="./Theme/ContactCard.xaml" />
+                 <ResourceDictionary Source="./Theme/MessageItem.xaml" />
+                 <ResourceDictionary Source="./Theme/MessageBox.xaml" />
+             </ResourceDictionary.MergedDictionaries>
+             
+             <BitmapImage x:Key="SmileEmoji" UriSource="C:\Users\pawel\RiderProjects\SimpleChat\SimleChatClient\Icons\smile-icon-1024x1024-g1j4n4ie.png"/>
+         </ResourceDictionary>
+    </Application.Resources>
+</Application>
