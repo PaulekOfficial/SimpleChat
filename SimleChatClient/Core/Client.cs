@@ -13,6 +13,8 @@ namespace SimpleChatClient
     {
         public MultithreadEventLoopGroup Group = new MultithreadEventLoopGroup();
         public IChannel BootstrapChannel;
+        
+        public ClientHandler ChannelHandler { get; set; }
 
         public string BindAddress { get; }
         public int BindPort { get; }
@@ -28,6 +30,8 @@ namespace SimpleChatClient
             Nickname = nickname;
             BindAddress = bindAddress;
             BindPort = port;
+            
+            ChannelHandler = new ClientHandler(this);
         }
 
         public X509Certificate2 Certificate2 { get; set; }
@@ -45,7 +49,7 @@ namespace SimpleChatClient
                     {
                         IChannelPipeline pipeline = channel.Pipeline;
 
-                        pipeline.AddLast(new ClientHandler(this));
+                        pipeline.AddLast(ChannelHandler);
                         pipeline.AddLast(
                             new TlsHandler(
                                 stream => new SslStream(stream, true, (sender, certificate, chain, errors) => true),

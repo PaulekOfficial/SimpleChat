@@ -10,6 +10,8 @@ public class ChatViewModel : ObservableObject
     private Client _client = ClientFactory.GetClientInstance();
 
     public string Nickname { get; set; }
+    
+    public string Message { get; set; }
 
     public ObservableCollection<MessageModel> Messages { get; set; }
     public ObservableCollection<ContactModel> Contacts { get; set; }
@@ -60,5 +62,10 @@ public class ChatViewModel : ObservableObject
             ImageSource = "https://i.pinimg.com/originals/c8/bd/45/c8bd45cace908c61201a03c53aa502bd.jpg",
             Messages = Messages
         });
+    }
+    
+    public void SendCommand()
+    {
+        Console.WriteLine(Message);
     }
 }

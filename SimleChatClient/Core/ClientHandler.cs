@@ -65,15 +65,24 @@ namespace SimpleChatClient
             Console.WriteLine($"Podłączono do serwera - id: {loginSuccess.Uuid}");
             Console.WriteLine($"Zalogowano psełdonime - nick: {loginSuccess.Username}");
 
-            _inputThread.Start();
-            while (true)
-            {
-                WaitForPacket();
-                var textPacket = (TextMessagePacket)_reader.ParsePacket(_packets, new TextMessagePacket());
-                _packets.RemoveRange(0, 1);
+            // _inputThread.Start();
+            // while (true)
+            // {
+            //     WaitForPacket();
+            //     var textPacket = (TextMessagePacket)_reader.ParsePacket(_packets, new TextMessagePacket());
+            //     _packets.RemoveRange(0, 1);
+            //
+            //     Console.WriteLine($"[{textPacket.Username}]: {textPacket.Message}");
+            // }
+        }
+        
+        public void SendChatMessage(string message)
+        {
+            var packet = new TextChatPacket();
+            packet.Message = message;
 
-                Console.WriteLine($"[{textPacket.Username}]: {textPacket.Message}");
-            }
+            _writer.WritePacket(packet);
+            _writer.Flush(_context);
         }
 
         private void InputText()

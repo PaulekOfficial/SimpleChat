@@ -114,7 +114,7 @@
                 
                 <TextBox Grid.Column="0"
                          Height="40"
-                         Text="Message @Username"
+                         KeyDown="UIElement_OnKeyDown"
                          Style="{StaticResource MessageBox}"
                          Grid.ColumnSpan="2">
                 </TextBox>
