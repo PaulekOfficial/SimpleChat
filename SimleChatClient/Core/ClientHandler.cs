@@ -13,6 +13,7 @@ namespace SimpleChatClient
         private readonly PacketReader _reader;
         private readonly Thread _handshakeTask;
         private readonly Thread _inputThread;
+        private readonly PacketManager _packetManager;
         private readonly IWriter _writer;
 
         private readonly List<RawPacket> _packets;
@@ -26,6 +27,9 @@ namespace SimpleChatClient
 
             this._writer = new PacketWriter();
             _reader = new PacketReader();
+
+            this._packetManager = new PacketManager();
+            _packetManager.RegisterPacket<TextChatMessageHistoryPacket>(0x0F);
         }
 
         private void Handle()
@@ -64,16 +68,6 @@ namespace SimpleChatClient
 
             Console.WriteLine($"Podłączono do serwera - id: {loginSuccess.Uuid}");
             Console.WriteLine($"Zalogowano psełdonime - nick: {loginSuccess.Username}");
-
-            // _inputThread.Start();
-            // while (true)
-            // {
-            //     WaitForPacket();
-            //     var textPacket = (TextMessagePacket)_reader.ParsePacket(_packets, new TextMessagePacket());
-            //     _packets.RemoveRange(0, 1);
-            //
-            //     Console.WriteLine($"[{textPacket.Username}]: {textPacket.Message}");
-            // }
         }
         
         public void SendChatMessage(string message)
@@ -107,9 +101,8 @@ namespace SimpleChatClient
             {
                 var raw = _reader.ReadPacket(byteBuffer);
                 if (raw == null) continue;
-
-                Console.WriteLine($"Got new packet id: {raw.PacketId()}");
-
+                
+                _packetManager.CallAndForget(raw, new EventArgs());
                 _packets.Add(raw);
             }
         }
@@ -119,6 +112,11 @@ namespace SimpleChatClient
             while (_packets.Count <= 0)
             {
             }
+        }
+        
+        public PacketManager GetPacketManager()
+        {
+            return _packetManager;
         }
 
         public override void ChannelUnregistered(IChannelHandlerContext context)

@@ -53,4 +53,8 @@
       <PackageReference Include="NLog" Version="5.2.8" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="cache\" />
+    </ItemGroup>
+
 </Project>

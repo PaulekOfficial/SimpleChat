@@ -162,7 +162,7 @@ namespace SimpleChatProtocol
             }
         }
 
-        public class TextMessagePacket : IPacket
+        public class TextChatMessageHistoryPacket : IPacket
         {
             public string Username { get; set; }
             public string Message { get; set; }

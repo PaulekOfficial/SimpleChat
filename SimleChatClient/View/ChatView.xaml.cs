@@ -28,13 +28,12 @@ public partial class ChatView : UserControl
         }
         _client.ChannelHandler.SendChatMessage(viewModel.Message);
         viewModel.Message = string.Empty;
+        viewModel.SendCommand();
         
         var textBox = sender as TextBox;
         if(textBox == null || string.IsNullOrEmpty(textBox.Text))
         {
             return;
         }
-        textBox.Clear();
-        textBox.UpdateLayout();
     }
 }

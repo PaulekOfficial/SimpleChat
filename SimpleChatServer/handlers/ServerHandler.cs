@@ -33,8 +33,8 @@ namespace SimpleChatServer
             Writer = new PacketWriter();
             PacketManager = new PacketManager();
             
-            PacketManager.RegisterPacket<ServerSidePackets.TextMessagePacket>(0x0F);
-            PacketManager.RegisterHandler<ServerSidePackets.TextMessagePacket>(0x0F, HandleTextMessagePacket);
+            PacketManager.RegisterPacket<TextChatPacket>(0x0D);
+            PacketManager.RegisterHandler<TextChatPacket>(0x0D, HandleTextMessagePacket);
         }
 
         private void Handle()
@@ -58,9 +58,16 @@ namespace SimpleChatServer
             }
         }
 
-        public void HandleTextMessagePacket(ServerSidePackets.TextMessagePacket packet, EventArgs args)
+        public void HandleTextMessagePacket(TextChatPacket packet, EventArgs args)
         {
+            var packetToSend = new ServerSidePackets.TextChatMessageHistoryPacket();
+            packetToSend.Username = _username;
+            packetToSend.Uuid = _uuid;
+            packetToSend.Message = packet.Message;
             
+            _server.SendPacketToAllClients(packetToSend);
+            
+            Console.WriteLine($"[{_username}]: {packet.Message}");
         }
 
         private void HandlePlay()
@@ -129,21 +136,6 @@ namespace SimpleChatServer
 
             var client = new Client(_uuid, _username, this);
             _server.Clients.Add(_uuid, client);
-
-            while (true)
-            {
-                WaitForPacket();
-                var chatTextMessage = (TextChatPacket) Reader.ParsePacket(_packets, new TextChatPacket());
-                _packets.RemoveRange(0, 1);
-                Console.WriteLine($"[{_username}]: {chatTextMessage.Message}");
-
-                var messagePacket = new ServerSidePackets.TextMessagePacket();
-                messagePacket.Username = _username;
-                messagePacket.Uuid = _uuid;
-                messagePacket.Message = chatTextMessage.Message;
-
-                _server.SendPacketToAllClients(messagePacket, _uuid);
-            }
         }
 
         public override void ChannelRead(IChannelHandlerContext ctx, object msg)
