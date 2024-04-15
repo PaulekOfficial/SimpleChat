@@ -1,229 +1,329 @@
-﻿using DotNetty.Buffers;
-using System.Text;
+﻿using System.Text;
+using DotNetty.Buffers;
 
-namespace SimpleChatProtocol
+namespace SimpleChatProtocol;
+
+public class Handshake : IPacket
 {
-    #region Direction ClientBound
+    public int ProtocolNumber { get; set; }
 
-    public class Handshake : IPacket
+    public string ServerAddress { get; set; }
+
+    public int Port { get; set; }
+
+    public string Region { get; set; }
+
+    public string System { get; set; }
+
+    public ConnectionState NextConnectionState { get; set; }
+
+    public byte PacketId()
     {
-        public int ProtocolNumber { get; set; }
+        return 0x00;
+    }
 
-        public string ServerAddress { get; set; }
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
 
-        public int Port { get; set; }
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        ProtocolNumber = byteBuffer.ReadInt();
 
-        public string Region { get; set; }
+        var serverAddressLength = byteBuffer.ReadInt();
+        ServerAddress = byteBuffer.ReadString(serverAddressLength, Encoding.Default);
 
-        public string System { get; set; }
+        Port = byteBuffer.ReadInt();
 
-        public ConnectionState NextConnectionState { get; set; }
+        var regionLength = byteBuffer.ReadInt();
+        Region = byteBuffer.ReadString(regionLength, Encoding.Default);
 
-        public byte PacketId()
+        var systemLength = byteBuffer.ReadInt();
+        System = byteBuffer.ReadString(systemLength, Encoding.Default);
+
+        var connectionStateId = byteBuffer.ReadInt();
+        switch (connectionStateId)
         {
-            return 0x00;
-        }
-
-        public PacketDirection Direction()
-        {
-            return PacketDirection.ClientBound;
-        }
-
-        public void Parse(IByteBuffer byteBuffer)
-        {
-            ProtocolNumber = byteBuffer.ReadInt();
-
-            var serverAddressLength = byteBuffer.ReadInt();
-            ServerAddress = byteBuffer.ReadString(serverAddressLength, Encoding.Default);
-
-            Port = byteBuffer.ReadInt();
-
-            var regionLength = byteBuffer.ReadInt();
-            Region = byteBuffer.ReadString(regionLength, Encoding.Default);
-
-            var systemLength = byteBuffer.ReadInt();
-            System = byteBuffer.ReadString(systemLength, Encoding.Default);
-
-            var connectionStateID = byteBuffer.ReadInt();
-            switch (connectionStateID)
-            {
-                case 1:
-                    NextConnectionState = ConnectionState.HANDSHAKE;
-                    break;
-                case 2:
-                    NextConnectionState = ConnectionState.STATUS;
-                    break;
-                case 3:
-                    NextConnectionState = ConnectionState.PLAY;
-                    break;
-                case 4:
-                    NextConnectionState = ConnectionState.CONSOLE;
-                    break;
-                default:
-                    NextConnectionState = ConnectionState.UNKNOWN;
-                    break;
-            }
-        }
-
-        public void Serialize(IByteBuffer byteBuffer)
-        {
-            byteBuffer.WriteInt(ProtocolNumber);
-
-            byteBuffer.WriteInt(ServerAddress.Length);
-            byteBuffer.WriteString(ServerAddress, Encoding.Default);
-
-            byteBuffer.WriteInt(Port);
-
-            byteBuffer.WriteInt(Region.Length);
-            byteBuffer.WriteString(Region, Encoding.Default);
-
-            byteBuffer.WriteInt(System.Length);
-            byteBuffer.WriteString(System, Encoding.Default);
-
-            byteBuffer.WriteInt((int)NextConnectionState);
-        }
-
-        public void Dispose()
-        {
-            ProtocolNumber = 0;
-            ServerAddress = "";
-            Port = 0;
-            Region = "";
-            System = "";
-            NextConnectionState = ConnectionState.UNKNOWN;
-
-            GC.SuppressFinalize(this);
-        }
-
-        public override string ToString()
-        {
-            return
-                $"Handshake: {ProtocolNumber}, {ServerAddress}, {Port}, {Region}, {System}, {NextConnectionState}";
+            case 1:
+                NextConnectionState = ConnectionState.HANDSHAKE;
+                break;
+            case 2:
+                NextConnectionState = ConnectionState.STATUS;
+                break;
+            case 3:
+                NextConnectionState = ConnectionState.PLAY;
+                break;
+            case 4:
+                NextConnectionState = ConnectionState.CONSOLE;
+                break;
+            default:
+                NextConnectionState = ConnectionState.UNKNOWN;
+                break;
         }
     }
 
-    public class LoginRequest : IPacket
+    public void Serialize(IByteBuffer byteBuffer)
     {
-        public string Username { get; set; }
+        byteBuffer.WriteInt(ProtocolNumber);
 
-        public byte PacketId()
-        {
-            return 0x0A;
-        }
+        byteBuffer.WriteInt(ServerAddress.Length);
+        byteBuffer.WriteString(ServerAddress, Encoding.Default);
 
-        public PacketDirection Direction()
-        {
-            return PacketDirection.ClientBound;
-        }
+        byteBuffer.WriteInt(Port);
 
-        public void Parse(IByteBuffer byteBuffer)
-        {
-            var usernameLength = byteBuffer.ReadInt();
-            Username = byteBuffer.ReadString(usernameLength, Encoding.Default);
-        }
+        byteBuffer.WriteInt(Region.Length);
+        byteBuffer.WriteString(Region, Encoding.Default);
 
-        public void Serialize(IByteBuffer byteBuffer)
-        {
-            byteBuffer.WriteInt(Username.Length);
-            byteBuffer.WriteString(Username, Encoding.Default);
-        }
+        byteBuffer.WriteInt(System.Length);
+        byteBuffer.WriteString(System, Encoding.Default);
 
-        public void Dispose()
-        {
-            Username = "";
-
-            GC.SuppressFinalize(this);
-        }
+        byteBuffer.WriteInt((int)NextConnectionState);
     }
 
-    public class EncryptionResponse : IPacket
+    public void Dispose()
     {
-        public string SharedSecret { get; set; }
+        ProtocolNumber = 0;
+        ServerAddress = "";
+        Port = 0;
+        Region = "";
+        System = "";
+        NextConnectionState = ConnectionState.UNKNOWN;
 
-        public string SharedToken { get; set; }
-
-        public byte PacketId()
-        {
-            return 0x0C;
-        }
-
-        public PacketDirection Direction()
-        {
-            return PacketDirection.ClientBound;
-        }
-
-        public void Parse(IByteBuffer byteBuffer)
-        {
-            var sharedSecretLength = byteBuffer.ReadInt();
-            SharedSecret = byteBuffer.ReadString(sharedSecretLength, Encoding.Default);
-
-            var verifyTokenLength = byteBuffer.ReadInt();
-            SharedToken = byteBuffer.ReadString(verifyTokenLength, Encoding.Default);
-        }
-
-        public void Serialize(IByteBuffer byteBuffer)
-        {
-            byteBuffer.WriteInt(SharedSecret.Length);
-            byteBuffer.WriteString(SharedSecret, Encoding.Default);
-
-            byteBuffer.WriteInt(SharedToken.Length);
-            byteBuffer.WriteString(SharedToken, Encoding.Default);
-        }
-
-        public void Dispose()
-        {
-            SharedSecret = "";
-            SharedToken = "";
-
-            GC.SuppressFinalize(this);
-        }
+        GC.SuppressFinalize(this);
     }
 
-    public class TextChatPacket : IPacket
+    public override string ToString()
     {
-        public string Message { get; set; }
-        public Guid   Uuid { get; set; }
+        return
+            $"Handshake: {ProtocolNumber}, {ServerAddress}, {Port}, {Region}, {System}, {NextConnectionState}";
+    }
+}
 
-        public byte PacketId()
-        {
-            return 0x0D;
-        }
-
-        public PacketDirection Direction()
-        {
-            return PacketDirection.ClientBound;
-        }
-
-        public void Parse(IByteBuffer byteBuffer)
-        {
-            var messageLength = byteBuffer.ReadInt();
-            Message = byteBuffer.ReadString(messageLength, Encoding.Default);
-
-            var uuidLength = byteBuffer.ReadInt();
-            Uuid = new Guid(byteBuffer.ReadString(uuidLength, Encoding.Default));
-        }
-
-        public void Serialize(IByteBuffer byteBuffer)
-        {
-            byteBuffer.WriteInt(Message.Length);
-            byteBuffer.WriteString(Message, Encoding.Default);
-
-            var uuid = Uuid.ToString();
-            byteBuffer.WriteInt(uuid.Length);
-            byteBuffer.WriteString(uuid, Encoding.Default);
-        }
-
-        public void Dispose()
-        {
-            Message = "";
-
-            GC.SuppressFinalize(this);
-        }
+public class LoginStartRequest : IPacket
+{
+    public byte PacketId()
+    {
+        return 0x0A;
     }
 
-    #endregion
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
 
-    #region Direction ServerBound
+    public void Parse(IByteBuffer byteBuffer)
+    {
+    }
 
-    #endregion
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class EncryptionResponse : IPacket
+{
+    public string SharedSecret { get; set; }
+
+    public string SharedToken { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x0C;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var sharedSecretLength = byteBuffer.ReadInt();
+        SharedSecret = byteBuffer.ReadString(sharedSecretLength, Encoding.Default);
+
+        var verifyTokenLength = byteBuffer.ReadInt();
+        SharedToken = byteBuffer.ReadString(verifyTokenLength, Encoding.Default);
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(SharedSecret.Length);
+        byteBuffer.WriteString(SharedSecret, Encoding.Default);
+
+        byteBuffer.WriteInt(SharedToken.Length);
+        byteBuffer.WriteString(SharedToken, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        SharedSecret = "";
+        SharedToken = "";
+
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class TextChatPacket : IPacket
+{
+    public Guid Uuid { get; set; }
+    public string Message { get; set; }
+    public DateTime Time { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x0D;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var messageLength = byteBuffer.ReadInt();
+        Message = byteBuffer.ReadString(messageLength, Encoding.Default);
+
+        var uuidLength = byteBuffer.ReadInt();
+        Uuid = new Guid(byteBuffer.ReadString(uuidLength, Encoding.Default));
+
+        Time = new DateTime(byteBuffer.ReadLong());
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(Message.Length);
+        byteBuffer.WriteString(Message, Encoding.Default);
+
+        var uuid = Uuid.ToString();
+        byteBuffer.WriteInt(uuid.Length);
+        byteBuffer.WriteString(uuid, Encoding.Default);
+
+        byteBuffer.WriteLong(Time.Ticks);
+    }
+
+    public void Dispose()
+    {
+        Message = "";
+        Uuid = Guid.Empty;
+
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class FetchContactsPacket : IPacket
+{
+    public Guid Uuid { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x10;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var uuidLength = byteBuffer.ReadInt();
+        Uuid = new Guid(byteBuffer.ReadString(uuidLength, Encoding.Default));
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        var uuid = Uuid.ToString();
+        byteBuffer.WriteInt(uuid.Length);
+        byteBuffer.WriteString(uuid, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class LoginRequestPacket : IPacket
+{
+    public String Login { get; set; }
+    public String Password { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x11;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var loginLength = byteBuffer.ReadInt();
+        Login = byteBuffer.ReadString(loginLength, Encoding.Default);
+        
+        var passwordLength = byteBuffer.ReadInt();
+        Password = byteBuffer.ReadString(passwordLength, Encoding.Default);
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(Login.Length);
+        byteBuffer.WriteString(Login, Encoding.Default);
+        
+        byteBuffer.WriteInt(Password.Length);
+        byteBuffer.WriteString(Password, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class RegisterRequestPacket : IPacket
+{
+    public String Login { get; set; }
+    public String Password { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x12;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var loginLength = byteBuffer.ReadInt();
+        Login = byteBuffer.ReadString(loginLength, Encoding.Default);
+        
+        var passwordLength = byteBuffer.ReadInt();
+        Password = byteBuffer.ReadString(passwordLength, Encoding.Default);
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(Login.Length);
+        byteBuffer.WriteString(Login, Encoding.Default);
+        
+        byteBuffer.WriteInt(Password.Length);
+        byteBuffer.WriteString(Password, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

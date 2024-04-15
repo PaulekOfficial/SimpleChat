@@ -3,10 +3,10 @@
     <Style TargetType="ListViewItem" x:Key="ContactCard">
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#292b2F"></Setter>
+                <Setter Property="Background" Value="#292b2F" />
             </Trigger>
         </Style.Triggers>
-        
+
         <Setter Property="Background" Value="#393B40" />
         <Setter Property="Template">
             <Setter.Value>
@@ -19,24 +19,24 @@
                                     Margin="10,0,0,0">
                             <Ellipse Width="35" Height="35">
                                 <Ellipse.Fill>
-                                    <ImageBrush ImageSource="{Binding ImageSource}" />
+                                    <ImageBrush ImageSource="{Binding Avatar}" />
                                 </Ellipse.Fill>
                             </Ellipse>
                             <!-- <Border Width="30" Height="30" -->
                             <!--         Background="CornflowerBlue" -->
                             <!--         CornerRadius="25"> -->
-                                <StackPanel>
-                                    <Label 
-                                        Margin="5,2,0,0" 
-                                        Content="{Binding Username}" 
-                                        FontSize="15"
-                                        Foreground="White"/>
-                                    <Label 
-                                        Margin="5,-10,0,0" 
-                                        Content="{Binding LastMessage}" 
-                                        Foreground="Gray" 
-                                        FontSize="13"/>
-                                </StackPanel>
+                            <StackPanel>
+                                <Label
+                                    Margin="5,2,0,0"
+                                    Content="{Binding Username}"
+                                    FontSize="15"
+                                    Foreground="White" />
+                                <Label
+                                    Margin="5,-10,0,0"
+                                    Content="{Binding LastMessage}"
+                                    Foreground="Gray"
+                                    FontSize="13" />
+                            </StackPanel>
                             <!-- </Border> -->
                         </StackPanel>
                     </Border>

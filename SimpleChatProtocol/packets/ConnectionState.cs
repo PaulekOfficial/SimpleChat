@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace SimpleChatProtocol;
 
-namespace SimpleChatProtocol
+public enum ConnectionState
 {
-    public enum ConnectionState
-    {
-        HANDSHAKE = 1,
-        STATUS,
-        PLAY,
-        CONSOLE,
-        UNKNOWN
-    }
+    HANDSHAKE = 1,
+    STATUS,
+    PLAY,
+    CONSOLE,
+    UNKNOWN
 }

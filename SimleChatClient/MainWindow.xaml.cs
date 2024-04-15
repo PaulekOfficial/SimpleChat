@@ -1,24 +1,16 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using SimpleChatClient;
 
 namespace ChatClientGUI;
 
 /// <summary>
-/// Interaction logic for MainWindow.xaml
+///     Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow : Window
 {
     private Client _client = ClientFactory.GetClientInstance();
-    
+
     public MainWindow()
     {
         InitializeComponent();
@@ -26,11 +18,8 @@ public partial class MainWindow : Window
 
     private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed)
-        {
-            return;
-        }
-        
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+
         DragMove();
     }
 
@@ -46,13 +35,12 @@ public partial class MainWindow : Window
             WindowState = WindowState.Normal;
             return;
         }
-        
+
         WindowState = WindowState.Maximized;
     }
 
     private void ButtonExit_OnClick(object sender, RoutedEventArgs e)
     {
-        
         Close();
     }
 }

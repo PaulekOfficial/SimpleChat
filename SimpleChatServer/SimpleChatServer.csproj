@@ -9,52 +9,57 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="obj\Debug\net8.0\apphost.exe" />
-      <Content Include="obj\Debug\net8.0\refint\SimpleChatServer.dll" />
-      <Content Include="obj\Debug\net8.0\ref\SimpleChatServer.dll" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.AssemblyInfoInputs.cache" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.assets.cache" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.AssemblyReference.cache" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.BuildWithSkipAnalyzers" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.CopyComplete" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.CoreCompileInputs.cache" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.FileListAbsolute.txt" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.dll" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.GeneratedMSBuildEditorConfig.editorconfig" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.genruntimeconfig.cache" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.pdb" />
-      <Content Include="obj\Debug\net8.0\SimpleChatServer.sourcelink.json" />
-      <Content Include="obj\project.assets.json" />
-      <Content Include="obj\project.nuget.cache" />
-      <Content Include="obj\project.packagespec.json" />
-      <Content Include="obj\rider.project.model.nuget.info" />
-      <Content Include="obj\rider.project.restore.info" />
-      <Content Include="obj\SimpleChatServer.csproj.nuget.dgspec.json" />
-      <Content Include="obj\SimpleChatServer.csproj.nuget.g.props" />
-      <Content Include="obj\SimpleChatServer.csproj.nuget.g.targets" />
+        <Content Include="obj\Debug\net8.0\apphost.exe"/>
+        <Content Include="obj\Debug\net8.0\refint\SimpleChatServer.dll"/>
+        <Content Include="obj\Debug\net8.0\ref\SimpleChatServer.dll"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.AssemblyInfoInputs.cache"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.assets.cache"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.AssemblyReference.cache"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.BuildWithSkipAnalyzers"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.CopyComplete"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.CoreCompileInputs.cache"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.csproj.FileListAbsolute.txt"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.dll"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.GeneratedMSBuildEditorConfig.editorconfig"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.genruntimeconfig.cache"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.pdb"/>
+        <Content Include="obj\Debug\net8.0\SimpleChatServer.sourcelink.json"/>
+        <Content Include="obj\project.assets.json"/>
+        <Content Include="obj\project.nuget.cache"/>
+        <Content Include="obj\project.packagespec.json"/>
+        <Content Include="obj\rider.project.model.nuget.info"/>
+        <Content Include="obj\rider.project.restore.info"/>
+        <Content Include="obj\SimpleChatServer.csproj.nuget.dgspec.json"/>
+        <Content Include="obj\SimpleChatServer.csproj.nuget.g.props"/>
+        <Content Include="obj\SimpleChatServer.csproj.nuget.g.targets"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Include="obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
-      <Compile Include="obj\Debug\net8.0\SimpleChatServer.AssemblyInfo.cs" />
-      <Compile Include="obj\Debug\net8.0\SimpleChatServer.GlobalUsings.g.cs" />
+        <Compile Include="obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs"/>
+        <Compile Include="obj\Debug\net8.0\SimpleChatServer.AssemblyInfo.cs"/>
+        <Compile Include="obj\Debug\net8.0\SimpleChatServer.GlobalUsings.g.cs"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SimpleChatProtocol\SimpleChatProtocol.csproj" />
+        <ProjectReference Include="..\SimpleChatProtocol\SimpleChatProtocol.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DotNetty.Buffers" Version="0.7.5" />
-      <PackageReference Include="DotNetty.Codecs" Version="0.7.5" />
-      <PackageReference Include="DotNetty.Common" Version="0.7.5" />
-      <PackageReference Include="DotNetty.Handlers" Version="0.7.5" />
-      <PackageReference Include="DotNetty.Transport" Version="0.7.5" />
-      <PackageReference Include="NLog" Version="5.2.8" />
+        <PackageReference Include="BCrypt" Version="1.0.0"/>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
+        <PackageReference Include="Dapper" Version="2.1.35"/>
+        <PackageReference Include="DotNetty.Buffers" Version="0.7.5"/>
+        <PackageReference Include="DotNetty.Codecs" Version="0.7.5"/>
+        <PackageReference Include="DotNetty.Common" Version="0.7.5"/>
+        <PackageReference Include="DotNetty.Handlers" Version="0.7.5"/>
+        <PackageReference Include="DotNetty.Transport" Version="0.7.5"/>
+        <PackageReference Include="MySqlConnector" Version="2.3.6"/>
+        <PackageReference Include="NLog" Version="5.2.8"/>
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="cache\" />
+        <Folder Include="cache\database\"/>
     </ItemGroup>
 
 </Project>

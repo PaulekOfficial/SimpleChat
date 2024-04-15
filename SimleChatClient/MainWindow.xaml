@@ -3,47 +3,43 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ChatClientGUI"
         xmlns:viewModel="clr-namespace:ChatClientGUI.Models.ViewModel"
         xmlns:view="clr-namespace:ChatClientGUI.View"
         mc:Ignorable="d"
-        Height="650" Width="1200" 
+        Height="{Binding WindowHeight}" Width="{Binding WindowWidth}"
         Background="#36393F"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip">
-    
+
     <Window.DataContext>
         <viewModel:MainViewModel />
     </Window.DataContext>
-        
+
     <Window.Resources>
         <DataTemplate DataType="{x:Type view:ChatView}">
             <view:ChatView />
         </DataTemplate>
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="25">
-            </RowDefinition>
-            <RowDefinition Height="625">
-            </RowDefinition>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="625" />
         </Grid.RowDefinitions>
-        
-        <Border 
-            Grid.Row="0" 
-            Background="#252525" 
+
+        <Border
+            Grid.Row="0"
+            Background="#252525"
             MouseDown="UIElement_OnMouseDown">
             <Grid HorizontalAlignment="Stretch">
-                <Label 
-                    Content="SimpulChatGUI" 
-                    Foreground="Gray" 
-                    FontWeight="Bold">
-                </Label>
-                
-                <StackPanel 
-                    HorizontalAlignment="Right" 
+                <Label
+                    Content="SimpulChatGUI"
+                    Foreground="Gray"
+                    FontWeight="Bold" />
+
+                <StackPanel
+                    HorizontalAlignment="Right"
                     Orientation="Horizontal">
                     <Button
                         Width="20" Height="20"

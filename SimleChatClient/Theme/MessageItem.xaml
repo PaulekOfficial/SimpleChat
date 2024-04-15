@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style TargetType="ListViewItem" x:Key="ChatItem">
+    <Style TargetType="ListViewItem" x:Key="MessageItem">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -11,10 +11,10 @@
                             <Ellipse.Fill>
                                 <ImageBrush
                                     ImageSource="{Binding ImageMessage}"
-                                            RenderOptions.BitmapScalingMode="Fant" />
+                                    RenderOptions.BitmapScalingMode="Fant" />
                             </Ellipse.Fill>
                         </Ellipse>
-                            
+
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="{Binding Username}"
@@ -30,29 +30,33 @@
                                        VerticalAlignment="Center"
                                        Margin="6,6,-5,0" />
                             </StackPanel>
-                            
+
                             <Label Content="{Binding Message}"
                                    Foreground="White"
                                    FontWeight="SemiBold"
                                    VerticalAlignment="Center"
                                    FontSize="15"
-                                   Margin="6,-12,0,0"/>
+                                   Margin="6,-12,0,0" />
                         </StackPanel>
                     </StackPanel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        
+
         <Style.Resources>
             <ControlTemplate x:Key="CustomRow">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{Binding Message}"
                            Foreground="White"
-                           Margin="40,-2,0,-2"/>
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Padding="0,0,0,6"
+                           Margin="75,0,0,0" />
                 </StackPanel>
             </ControlTemplate>
         </Style.Resources>
-        
+
         <Style.Triggers>
             <DataTrigger Binding="{Binding FirstMessage}" Value="False">
                 <Setter Property="Template" Value="{StaticResource CustomRow}" />

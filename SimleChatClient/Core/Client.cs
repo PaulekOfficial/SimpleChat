@@ -1,75 +1,76 @@
 ﻿using System.IO;
-using DotNetty.Transport.Bootstrapping;
 using System.Net;
 using System.Net.Security;
-using DotNetty.Transport.Channels;
-using DotNetty.Transport.Channels.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using DotNetty.Handlers.Tls;
+using DotNetty.Transport.Bootstrapping;
+using DotNetty.Transport.Channels;
+using DotNetty.Transport.Channels.Sockets;
+using SimpleChatProtocol;
 
-namespace SimpleChatClient
+namespace SimpleChatClient;
+
+public class Client
 {
-    public class Client
+    public IChannel BootstrapChannel;
+    public MultithreadEventLoopGroup Group = new();
+
+    public Client(string nickname, string bindAddress, int port)
     {
-        public MultithreadEventLoopGroup Group = new MultithreadEventLoopGroup();
-        public IChannel BootstrapChannel;
-        
-        public ClientHandler ChannelHandler { get; set; }
+        Certificate2 = new X509Certificate2(Path.Combine("", "dotnetty.com.pfx"), "password");
 
-        public string BindAddress { get; }
-        public int BindPort { get; }
+        Nickname = nickname;
+        BindAddress = bindAddress;
+        BindPort = port;
 
-        public string Nickname { get; set; }
-        
-        public Task NetworkTask {get; set;}
+        ChannelHandler = new ClientHandler(this);
+    }
 
-        public Client(string nickname, string bindAddress, int port)
+    public ClientHandler ChannelHandler { get; set; }
+    public string BindAddress { get; }
+    public int BindPort { get; }
+    public string Nickname { get; set; }
+    public Task NetworkTask { get; set; }
+    public X509Certificate2 Certificate2 { get; set; }
+
+    public void SendPacket(IPacket packet)
+    {
+        ChannelHandler.SendPacket(packet);
+    }
+
+    public async Task RunClientAsync()
+    {
+        try
         {
-            Certificate2 = new X509Certificate2(Path.Combine("", "dotnetty.com.pfx"), "password");
-
-            Nickname = nickname;
-            BindAddress = bindAddress;
-            BindPort = port;
-            
-            ChannelHandler = new ClientHandler(this);
-        }
-
-        public X509Certificate2 Certificate2 { get; set; }
-
-        public async Task RunClientAsync()
-        {
-            try
-            {
-                var bootstrap = new Bootstrap();
-                bootstrap
-                    .Group(Group)
-                    .Channel<TcpSocketChannel>()
-                    .Option(ChannelOption.TcpNodelay, true)
-                    .Handler(new ActionChannelInitializer<ISocketChannel>(channel =>
-                    {
-                        IChannelPipeline pipeline = channel.Pipeline;
-
-                        pipeline.AddLast(ChannelHandler);
-                        pipeline.AddLast(
-                            new TlsHandler(
-                                stream => new SslStream(stream, true, (sender, certificate, chain, errors) => true),
-                                new ClientTlsSettings(Certificate2.GetNameInfo(X509NameType.DnsName, false)))
-                        );
-                    }));
-
-                BootstrapChannel = await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(BindAddress), BindPort));
-
-                for (;;)
+            var bootstrap = new Bootstrap();
+            bootstrap
+                .Group(Group)
+                .Channel<TcpSocketChannel>()
+                .Option(ChannelOption.TcpNodelay, true)
+                .Handler(new ActionChannelInitializer<ISocketChannel>(channel =>
                 {
-                    //DUMMY AKAPAKA
-                }
+                    var pipeline = channel.Pipeline;
 
-                await BootstrapChannel.CloseAsync();
-            }
-            finally
+                    pipeline.AddLast(ChannelHandler);
+                    pipeline.AddLast(
+                        new TlsHandler(
+                            stream => new SslStream(stream, true, (sender, certificate, chain, errors) => true),
+                            new ClientTlsSettings(Certificate2.GetNameInfo(X509NameType.DnsName, false)))
+                    );
+                }));
+
+            BootstrapChannel = await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(BindAddress), BindPort));
+
+            for (;;)
             {
-                Group.ShutdownGracefullyAsync().Wait(1000);
+                //DUMMY AKAPAKA
             }
+
+            await BootstrapChannel.CloseAsync();
+        }
+        finally
+        {
+            Group.ShutdownGracefullyAsync().Wait(1000);
         }
     }
 }

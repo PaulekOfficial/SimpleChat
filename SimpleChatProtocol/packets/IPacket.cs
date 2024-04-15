@@ -1,20 +1,14 @@
 ﻿using DotNetty.Buffers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SimpleChatProtocol
+namespace SimpleChatProtocol;
+
+public interface IPacket : IDisposable
 {
-    public interface IPacket : IDisposable
-    {
-        byte PacketId();
+    byte PacketId();
 
-        PacketDirection Direction();
+    PacketDirection Direction();
 
-        void Parse(IByteBuffer byteBuffer);
+    void Parse(IByteBuffer byteBuffer);
 
-        void Serialize(IByteBuffer byteBuffer);
-    }
+    void Serialize(IByteBuffer byteBuffer);
 }

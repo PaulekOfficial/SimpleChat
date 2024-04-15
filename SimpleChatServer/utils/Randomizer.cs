@@ -1,29 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
-namespace SimpleChatServer
+namespace SimpleChatServer;
+
+public class Randomizer
 {
-    public class Randomizer
+    private static readonly Random _random = new();
+
+    public static string String(int length, bool lowerCase = false)
     {
-        private static readonly Random _random = new();
+        var stringBuilder = new StringBuilder();
 
-        public static string String(int length, bool lowerCase = false)
+        var offset = lowerCase ? 'a' : 'A';
+        const int lettersOffset = 26;
+
+        for (var i = 0; i < length; i++)
         {
-            var stringBuilder = new StringBuilder();
-
-            var offset = lowerCase ? 'a' : 'A';
-            const int lettersOffset = 26;
-
-            for (var i = 0; i < length; i++)
-            {
-                var @char = (char)_random.Next(offset, offset + lettersOffset);
-                stringBuilder.Append(@char);
-            }
-
-            return lowerCase ? stringBuilder.ToString().ToLower() : stringBuilder.ToString();
+            var @char = (char)_random.Next(offset, offset + lettersOffset);
+            stringBuilder.Append(@char);
         }
+
+        return lowerCase ? stringBuilder.ToString().ToLower() : stringBuilder.ToString();
     }
 }

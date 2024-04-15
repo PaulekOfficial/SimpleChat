@@ -1,20 +1,14 @@
 ﻿using DotNetty.Transport.Channels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SimpleChatProtocol
+namespace SimpleChatProtocol;
+
+public interface IWriter
 {
-    public interface IWriter
-    {
-        void WritePacket(IPacket packet);
+    void WritePacket(IPacket packet);
 
-        RawPacket PacketToRaw(IPacket packet);
+    RawPacket PacketToRaw(IPacket packet);
 
-        int GetStoredBytesLength();
+    int GetStoredBytesLength();
 
-        void Flush(IChannelHandlerContext context);
-    }
+    void Flush(IChannelHandlerContext context);
 }
