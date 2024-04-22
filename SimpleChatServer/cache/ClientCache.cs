@@ -110,7 +110,7 @@ public class ClientCache : ICache<Guid, Client>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             var affectedRows = connection.Execute(
-                "CREATE TABLE IF NOT EXISTS client (Id INT AUTO_INCREMENT PRIMARY KEY, Uuid CHAR(36) NOT NULL UNIQUE, Username VARCHAR(50) NOT NULL, Password TEXT, Avatar VARCHAR(255), Status VARCHAR(50), ChatStatus INT NOT NULL, JoinedAt DATETIME NOT NULL)");
+                "CREATE TABLE IF NOT EXISTS client (Id INT AUTO_INCREMENT PRIMARY KEY, Uuid CHAR(36) NOT NULL UNIQUE, Username VARCHAR(50) NOT NULL, Password TEXT, Avatar LONGTEXT, Status VARCHAR(50), ChatStatus INT NOT NULL, JoinedAt DATETIME NOT NULL)");
             return affectedRows > 0;
         }
     }

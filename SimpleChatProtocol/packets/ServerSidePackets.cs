@@ -153,6 +153,7 @@ public class ServerSidePackets
     public class TextChatMessageHistoryPacket : IPacket
     {
         public Guid Uuid { get; set; }
+        public Guid GroupId { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
         public string Avatar { get; set; }
@@ -170,19 +171,30 @@ public class ServerSidePackets
 
         public void Parse(IByteBuffer byteBuffer)
         {
-            var nicknameLength = byteBuffer.ReadInt();
-            Username = byteBuffer.ReadString(nicknameLength, Encoding.Default);
+            try
+            {
+                var nicknameLength = byteBuffer.ReadInt();
+                Username = byteBuffer.ReadString(nicknameLength, Encoding.Default);
 
-            var messageLength = byteBuffer.ReadInt();
-            Message = byteBuffer.ReadString(messageLength, Encoding.Default);
+                var messageLength = byteBuffer.ReadInt();
+                Message = byteBuffer.ReadString(messageLength, Encoding.Default);
 
-            var uuidLength = byteBuffer.ReadInt();
-            Uuid = new Guid(byteBuffer.ReadString(uuidLength, Encoding.Default));
+                var uuidLength = byteBuffer.ReadInt();
+                var uuidString = byteBuffer.ReadString(uuidLength, Encoding.Default);
+                Uuid = new Guid(uuidString);
+        
+                var groupIdLength = byteBuffer.ReadInt();
+                var groupIdString = byteBuffer.ReadString(groupIdLength, Encoding.Default);
+                GroupId = new Guid(groupIdString);
 
-            var avatarLength = byteBuffer.ReadInt();
-            Avatar = byteBuffer.ReadString(avatarLength, Encoding.Default);
+                var avatarLength = byteBuffer.ReadInt();
+                Avatar = byteBuffer.ReadString(avatarLength, Encoding.Default);
 
-            Time = new DateTime(byteBuffer.ReadLong());
+                Time = new DateTime(byteBuffer.ReadLong());
+            } catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public void Serialize(IByteBuffer byteBuffer)
@@ -196,6 +208,10 @@ public class ServerSidePackets
             var uuid = Uuid.ToString();
             byteBuffer.WriteInt(uuid.Length);
             byteBuffer.WriteString(uuid, Encoding.Default);
+            
+            var groupId = GroupId.ToString();
+            byteBuffer.WriteInt(groupId.Length);
+            byteBuffer.WriteString(groupId, Encoding.Default);
 
             byteBuffer.WriteInt(Avatar.Length);
             byteBuffer.WriteString(Avatar, Encoding.Default);
@@ -329,6 +345,45 @@ public class ServerSidePackets
         {
             Reason = "";
 
+            GC.SuppressFinalize(this);
+        }
+    }
+    
+    public class ClientStatusPacket : IPacket
+    {
+        public string Avatar { get; set; }
+        public string Status { get; set; }
+
+        public byte PacketId()
+        {
+            return 0x1D;
+        }
+
+        public PacketDirection Direction()
+        {
+            return PacketDirection.ServerBound;
+        }
+
+        public void Parse(IByteBuffer byteBuffer)
+        {
+            var avatarLength = byteBuffer.ReadInt();
+            Avatar = byteBuffer.ReadString(avatarLength, Encoding.Default);
+
+            var statusLength = byteBuffer.ReadInt();
+            Status = byteBuffer.ReadString(statusLength, Encoding.Default);
+        }
+
+        public void Serialize(IByteBuffer byteBuffer)
+        {
+            byteBuffer.WriteInt(Avatar.Length);
+            byteBuffer.WriteString(Avatar, Encoding.Default);
+
+            byteBuffer.WriteInt(Status.Length);
+            byteBuffer.WriteString(Status, Encoding.Default);
+        }
+
+        public void Dispose()
+        {
             GC.SuppressFinalize(this);
         }
     }

@@ -36,6 +36,7 @@ public class ClientHandler : ChannelHandlerAdapter
         _packetManager.RegisterPacket<UsernameCheckResponsePacket>(0x1B);
         _packetManager.RegisterPacket<LoginSuccess>(0x0D);
         _packetManager.RegisterPacket<LoginFailedPacket>(0x1C);
+        _packetManager.RegisterPacket<ClientStatusPacket>(0x1D);
         
         _packetManager.RegisterHandler<LoginSuccess>(0x0D, HandleLoginSuccess);
     }
@@ -100,10 +101,13 @@ public class ClientHandler : ChannelHandlerAdapter
         SendPacket(contactsPacket);
     }
 
-    public void SendChatMessage(string message)
+    public void SendChatMessage(string message, Guid groupId)
     {
         var packet = new TextChatPacket();
         packet.Message = message;
+        packet.Uuid = _client.Uuid;
+        packet.GroupId = groupId;
+        packet.Time = DateTime.Now;
 
         _writer.WritePacket(packet);
         _writer.Flush(_context);

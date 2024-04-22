@@ -13,8 +13,8 @@ namespace SimpleChatServer;
 public class Server
 {
     private readonly ClientCache _clientCache;
-    private readonly ICache<Guid, ChatGroup> _groupCache;
-    private readonly ICache<Guid, ChatMessage> _messageCache;
+    private readonly ChatGroupCache _groupCache;
+    private readonly ChatMessageCache _messageCache;
 
     //TODO: Implement multiserver support
     public string DATABASE_CONNECTION_STRING =
@@ -111,6 +111,27 @@ public class Server
         {
             Task.WaitAll(mainThreadsGroup.ShutdownGracefullyAsync(), workersThreadsGroup.ShutdownGracefullyAsync());
         }
+    }
+    
+    public Client? GetOtherClientInPrivateGroup(Guid groupId, Guid clientId)
+    {
+        var otherClientId = _groupCache.GetIdFromOtherClientInPrivateGroup(groupId, clientId);
+        return _clientCache.Get(otherClientId);
+    }
+    
+    public ICache<Guid, ChatMessage> GetMessageCache()
+    {
+        return _messageCache;
+    }
+    
+    public List<ChatMessage> GetLastMessagesFromGroup(Guid groupId)
+    {
+        return _messageCache.GetMessagesFromPeriod(groupId, DateTime.Now.AddDays(-5), DateTime.Now);
+    }
+    
+    public List<ChatGroup> GetGroupsByClientId(Guid uuid)
+    {
+        return _groupCache.GetGroupsByClientId(uuid);
     }
     
     public Client? GetClientByUsername(String username)

@@ -178,6 +178,7 @@ public class EncryptionResponse : IPacket
 public class TextChatPacket : IPacket
 {
     public Guid Uuid { get; set; }
+    public Guid GroupId { get; set; }
     public string Message { get; set; }
     public DateTime Time { get; set; }
 
@@ -195,9 +196,12 @@ public class TextChatPacket : IPacket
     {
         var messageLength = byteBuffer.ReadInt();
         Message = byteBuffer.ReadString(messageLength, Encoding.Default);
-
+        
         var uuidLength = byteBuffer.ReadInt();
         Uuid = new Guid(byteBuffer.ReadString(uuidLength, Encoding.Default));
+        
+        var groupIdLength = byteBuffer.ReadInt();
+        GroupId = new Guid(byteBuffer.ReadString(groupIdLength, Encoding.Default));
 
         Time = new DateTime(byteBuffer.ReadLong());
     }
@@ -210,6 +214,10 @@ public class TextChatPacket : IPacket
         var uuid = Uuid.ToString();
         byteBuffer.WriteInt(uuid.Length);
         byteBuffer.WriteString(uuid, Encoding.Default);
+        
+        var groupId = GroupId.ToString();
+        byteBuffer.WriteInt(groupId.Length);
+        byteBuffer.WriteString(groupId, Encoding.Default);
 
         byteBuffer.WriteLong(Time.Ticks);
     }
@@ -358,6 +366,45 @@ public class UsernameCheckRequestPacket : IPacket
     {
         byteBuffer.WriteInt(Username.Length);
         byteBuffer.WriteString(Username, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class FetchGroupMessagesPacket : IPacket
+{
+    public Guid UserId { get; set; }
+    public Guid GroupId { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x14;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var userIdLength = byteBuffer.ReadInt();
+        UserId = new Guid(byteBuffer.ReadString(userIdLength, Encoding.Default));
+        
+        var groupIdLength = byteBuffer.ReadInt();
+        GroupId = new Guid(byteBuffer.ReadString(groupIdLength, Encoding.Default));
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(UserId.ToString().Length);
+        byteBuffer.WriteString(UserId.ToString(), Encoding.Default);
+        
+        byteBuffer.WriteInt(GroupId.ToString().Length);
+        byteBuffer.WriteString(GroupId.ToString(), Encoding.Default);
     }
 
     public void Dispose()

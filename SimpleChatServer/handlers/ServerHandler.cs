@@ -44,6 +44,9 @@ public class ServerHandler : ChannelHandlerAdapter
         
         PacketManager.RegisterPacket<UsernameCheckRequestPacket>(0x13);
         PacketManager.RegisterHandler<UsernameCheckRequestPacket>(0x13, HandleUsernameCheckRequestPacket);
+        
+        PacketManager.RegisterPacket<FetchGroupMessagesPacket>(0x14);
+        PacketManager.RegisterHandler<FetchGroupMessagesPacket>(0x14, HandleFetchGroupMessagesPacket);
     }
 
     private void Handle()
@@ -71,24 +74,88 @@ public class ServerHandler : ChannelHandlerAdapter
     {
         var packetToSend = new ServerSidePackets.TextChatMessageHistoryPacket();
         packetToSend.Username = _username;
-        packetToSend.Avatar = "https://i.pinimg.com/originals/c8/bd/45/c8bd45cace908c61201a03c53aa502bd.jpg";
+        packetToSend.Avatar = _server.Clients[_uuid].Avatar;
         packetToSend.Uuid = _uuid;
+        packetToSend.GroupId = packet.GroupId;
         packetToSend.Message = packet.Message;
+        
+        var chatMessage = new ChatMessage(
+            Guid.NewGuid(),
+            packet.GroupId,
+            _uuid,
+            packet.Message,
+            DateTime.Now
+        );
+        
+        _server.GetMessageCache().Add(chatMessage.Uuid, chatMessage);
 
         _server.SendPacketToAllClients(packetToSend);
 
         Console.WriteLine($"[{_username}]: {packet.Message}");
     }
 
+    public void HandleFetchGroupMessagesPacket(FetchGroupMessagesPacket packet, EventArgs args)
+    {
+        var messages = _server.GetLastMessagesFromGroup(packet.GroupId);
+        foreach (var message in messages)
+        {
+            var client = _server.GetClientByUuid(message.SenderUuid);
+            if (client == null)
+            {
+                continue;
+            }
+            
+            var messagePacket = new ServerSidePackets.TextChatMessageHistoryPacket();
+            messagePacket.Username = client.Username;
+            messagePacket.Avatar = client.Avatar;
+            messagePacket.Uuid = message.Uuid;
+            messagePacket.GroupId = message.GroupUuid;
+            messagePacket.Message = message.Content;
+            
+            Writer.WritePacket(messagePacket);
+        }
+        
+        Writer.Flush(Context);
+    }
+
     public void HandleFetchContactsPacket(FetchContactsPacket packet, EventArgs args)
     {
         Console.WriteLine($"Fetching contacts for {_username}");
-
-        var contactsPacket = new ServerSidePackets.ClientContactPacket();
-        contactsPacket.Uuid = _uuid;
-        contactsPacket.Username = _username;
-        contactsPacket.Avatar = "https://i.pinimg.com/originals/c8/bd/45/c8bd45cace908c61201a03c53aa502bd.jpg";
-        Writer.WritePacket(contactsPacket);
+        
+        var clientStatusPacket = new ServerSidePackets.ClientStatusPacket();
+        clientStatusPacket.Avatar = _server.Clients[_uuid].Avatar;
+        clientStatusPacket.Status = _server.Clients[_uuid].Status;
+        
+        Writer.WritePacket(clientStatusPacket);
+        Writer.Flush(Context);
+        
+        var groups = _server.GetGroupsByClientId(_uuid);
+        
+        foreach (var group in groups)
+        {
+            if (group.privateGroup)
+            {
+                var otherUser = _server.GetOtherClientInPrivateGroup(group.GroupId, _uuid);
+                if (otherUser == null)
+                {
+                    continue;
+                }
+                
+                var contactsPacketPrivate = new ServerSidePackets.ClientContactPacket();
+                contactsPacketPrivate.Uuid = group.GroupId;
+                contactsPacketPrivate.Username = otherUser.Username;
+                contactsPacketPrivate.Avatar = otherUser.Avatar;
+                Writer.WritePacket(contactsPacketPrivate);
+                continue;
+            }
+            
+            var contactsPacket = new ServerSidePackets.ClientContactPacket();
+            contactsPacket.Uuid = group.GroupId;
+            contactsPacket.Username = group.Name;
+            contactsPacket.Avatar = group.Avatar;
+            Writer.WritePacket(contactsPacket);
+        }
+        
         Writer.Flush(Context);
     }
     

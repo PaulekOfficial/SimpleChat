@@ -39,7 +39,8 @@
                 BorderThickness="0"
                 Background="Transparent"
                 ItemContainerStyle="{StaticResource ContactCard}"
-                SelectionChanged="UIContact_OnElementChange" />
+                SelectionChanged="UIContact_OnElementChange"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
             <StackPanel Grid.Row="2"
                         Orientation="Horizontal"
                         Background="#292B2F">
@@ -48,7 +49,7 @@
                          Margin="18,0,0,0">
                     <Ellipse.Fill>
                         <ImageBrush
-                            ImageSource="https://i.pinimg.com/originals/c8/bd/45/c8bd45cace908c61201a03c53aa502bd.jpg"
+                            ImageSource="{Binding Avatar}"
                             RenderOptions.BitmapScalingMode="Fant" />
                     </Ellipse.Fill>
                 </Ellipse>
@@ -58,7 +59,7 @@
                 <!--         Margin="18,0,0,0" /> -->
                 <StackPanel VerticalAlignment="Center">
                     <Label Content="{Binding Nickname}" Foreground="White" FontWeight="Bold" Margin="10,2,0,0" />
-                    <Label Content="Ready to lift off!" Foreground="White" FontWeight="SemiBold" FontSize="10"
+                    <Label Content="{Binding Status}" Foreground="White" FontWeight="SemiBold" FontSize="10"
                            Margin="10,-8,0,0" />
                 </StackPanel>
             </StackPanel>
@@ -77,7 +78,7 @@
                 <Grid HorizontalAlignment="Stretch"
                       Margin="8">
                     <Label
-                        Content="Chat with {Binding ActiveContact.Nickname}"
+                        Content="{Binding ChatWith}"
                         VerticalAlignment="Center"
                         FontWeight="Medium"
                         Foreground="Gray"

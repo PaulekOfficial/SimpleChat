@@ -38,7 +38,7 @@ public class ChatMessageCache : ICache<Guid, ChatMessage>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             var affectedRows = connection.Execute(
-                "INSERT INTO chat_message (Uuid, SenderUuid, ReceiverUuid, GroupUuid, Content, SentAt, ReceivedAt, ReadAt) VALUES (@Uuid, @SenderUuid, @ReceiverUuid, @GroupUuid, @Content, @SentAt, @ReceivedAt, @ReadAt)",
+                "INSERT INTO chat_message (Uuid, SenderUuid, GroupUuid, Content, SentAt) VALUES (@Uuid, @SenderUuid, @GroupUuid, @Content, @SentAt)",
                 value);
             if (affectedRows > 0) _cache.Add(key, value);
 
@@ -51,7 +51,7 @@ public class ChatMessageCache : ICache<Guid, ChatMessage>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             var affectedRows = connection.Execute(
-                "UPDATE chat_message SET SenderUuid = @SenderUuid, ReceiverUuid = @ReceiverUuid, GroupUuid = @GroupUuid, Content = @Content, SentAt = @SentAt, ReceivedAt = @ReceivedAt, ReadAt = @ReadAt WHERE Uuid = @Uuid",
+                "UPDATE chat_message SET SenderUuid = @SenderUuid, GroupUuid = @GroupUuid, Content = @Content, SentAt = @SentAt WHERE Uuid = @Uuid",
                 value);
             return affectedRows > 0;
         }
@@ -94,18 +94,18 @@ public class ChatMessageCache : ICache<Guid, ChatMessage>
             return connection
                 .Query<ChatMessage>(
                     "SELECT * FROM chat_message WHERE GroupUuid = @GroupUuid ORDER BY SentAt LIMIT " + limit,
-                    new { GroupUuid = group.GroupId }).ToList();
+                    new { GroupId = group.GroupId }).ToList();
         }
     }
 
-    public List<ChatMessage> GetMessagesFromPeriod(ChatGroup group, DateTime start, DateTime end)
+    public List<ChatMessage> GetMessagesFromPeriod(Guid group, DateTime start, DateTime end)
     {
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             return connection
                 .Query<ChatMessage>(
-                    "SELECT * FROM chat_message WHERE GroupUuid = @GroupUuid AND SentAt BETWEEN @Start AND @End",
-                    new { GroupUuid = group.GroupId, Start = start, End = end }).ToList();
+                    "SELECT * FROM chat_message WHERE GroupUuid = @GroupId AND SentAt BETWEEN @Start AND @End",
+                    new { GroupId = group.ToString(), Start = start, End = end }).ToList();
         }
     }
 
@@ -114,7 +114,7 @@ public class ChatMessageCache : ICache<Guid, ChatMessage>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             var affectedRows = connection.Execute(
-                "CREATE TABLE IF NOT EXISTS chat_message (Uuid BINARY(16) PRIMARY KEY, SenderUuid BINARY(16), ReceiverUuid BINARY(16), GroupUuid BINARY(16), Content TEXT, SentAt DATETIME, ReceivedAt DATETIME, ReadAt DATETIME)");
+                "CREATE TABLE IF NOT EXISTS chat_message (Id INT PRIMARY KEY AUTO_INCREMENT, Uuid CHAR(36), SenderUuid CHAR(36), GroupUuid CHAR(36), Content TEXT, SentAt DATETIME)");
             return affectedRows > 0;
         }
     }

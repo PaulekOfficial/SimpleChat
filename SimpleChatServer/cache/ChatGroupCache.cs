@@ -25,7 +25,7 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
 
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
-            return connection.QueryFirstOrDefault<ChatGroup>("SELECT * FROM chat_group WHERE GroupId = @GroupId",
+            return connection.QueryFirstOrDefault<ChatGroup>("SELECT * FROM chat_group WHERE GroupUuid = @GroupUuid",
                 new { GroupId = key });
         }
     }
@@ -39,7 +39,7 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             return connection.Execute(
-                "INSERT INTO chat_group (GroupId, Avatar, Name, PrivateGroup, CreatedAt) VALUES (@GroupId, @Avatar, @Name, @PrivateGroup, @CreatedAt)",
+                "INSERT INTO chat_group (GroupUuid, Avatar, Name, PrivateGroup, CreatedAt) VALUES (@GroupUuid, @Avatar, @Name, @PrivateGroup, @CreatedAt)",
                 new
                 {
                     value.GroupId, value.Avatar, value.Name, PrivateGroup = value.privateGroup,
@@ -57,7 +57,7 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             return connection.Execute(
-                "UPDATE chat_group SET Avatar = @Avatar, Name = @Name, PrivateGroup = @PrivateGroup WHERE GroupId = @GroupId",
+                "UPDATE chat_group SET Avatar = @Avatar, Name = @Name, PrivateGroup = @PrivateGroup WHERE GroupUuid = @GroupUuid",
                 new { value.Avatar, value.Name, PrivateGroup = value.privateGroup, value.GroupId }) > 0;
         }
     }
@@ -68,7 +68,7 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
 
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
-            return connection.Execute("DELETE FROM chat_group WHERE GroupId = @GroupId", new { GroupId = key }) > 0;
+            return connection.Execute("DELETE FROM chat_group WHERE GroupUuid = @GroupUuid", new { GroupId = key }) > 0;
         }
     }
 
@@ -78,8 +78,48 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
 
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
-            return connection.QueryFirstOrDefault<ChatGroup>("SELECT * FROM chat_group WHERE GroupId = @GroupId",
+            return connection.QueryFirstOrDefault<ChatGroup>("SELECT * FROM chat_group WHERE GroupUuid = @GroupUuid",
                 new { GroupId = key }) != null;
+        }
+    }
+    
+    public List<ChatGroup> GetGroupsByClientName(string clientName)
+    {
+        using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
+        {
+            return connection.Query<ChatGroup>(
+                @"SELECT chat_group.* FROM chat_group 
+                    INNER JOIN chat_group_users ON chat_group.Id = chat_group_users.GroupUuid 
+                    INNER JOIN client ON chat_group_users.UserId = client.Id 
+                    WHERE client.Username = @ClientName",
+                new { ClientName = clientName }).ToList();
+        }
+    }
+    
+    public Guid GetIdFromOtherClientInPrivateGroup(Guid groupId, Guid clientId)
+    {
+        using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
+        {
+            var result = connection.ExecuteScalar(
+                @"SELECT client.Uuid FROM client
+                    INNER JOIN chat_group_users ON client.Id = chat_group_users.UserId
+                    WHERE chat_group_users.GroupId = (SELECT Id FROM chat_group WHERE GroupId = @GroupId)
+                    AND client.Uuid != @ClientId",
+                new { GroupId = groupId.ToString(), ClientId = clientId.ToString() });
+            return Guid.Parse(result.ToString());
+        }
+    }
+    
+    public List<ChatGroup> GetGroupsByClientId(Guid uuid)
+    {
+        using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
+        {
+            return connection.Query<ChatGroup>(
+                @"SELECT chat_group.* FROM chat_group 
+                    INNER JOIN chat_group_users ON chat_group.Id = chat_group_users.GroupId 
+                    INNER JOIN client ON chat_group_users.UserId = client.Id 
+                    WHERE client.Uuid = @UUID",
+                new { UUID = uuid }).ToList();
         }
     }
 
@@ -93,11 +133,11 @@ public class ChatGroupCache : ICache<Guid, ChatGroup>
         using (var connection = new MySqlConnection(_server.DATABASE_CONNECTION_STRING))
         {
             var affectedRows0 = connection.Execute(
-                "CREATE TABLE IF NOT EXISTS chat_group (Id INT PRIMARY KEY AUTO_INCREMENT, GroupId CHAR(36) NOT NULL, Avatar TEXT NOT NULL, Name TEXT NOT NULL, PrivateGroup BOOLEAN NOT NULL, CreatedAt DATETIME NOT NULL)");
+                "CREATE TABLE IF NOT EXISTS chat_group (Id INT PRIMARY KEY AUTO_INCREMENT, GroupUuid CHAR(36) NOT NULL, Avatar TEXT NOT NULL, Name TEXT NOT NULL, PrivateGroup BOOLEAN NOT NULL, CreatedAt DATETIME NOT NULL)");
 
             var affectedRows1 =
                 connection.Execute(
-                    "CREATE TABLE IF NOT EXISTS chat_group_users (Id INT PRIMARY KEY AUTO_INCREMENT, GroupId CHAR(36) NOT NULL, UserId CHAR(36) NOT NULL)");
+                    "CREATE TABLE IF NOT EXISTS chat_group_users (Id INT PRIMARY KEY AUTO_INCREMENT, GroupUuid INT NOT NULL, UserId INT NOT NULL, FOREIGN KEY (GroupUuid) REFERENCES chat_group(Id), FOREIGN KEY (UserId) REFERENCES client(Id))");
 
             return affectedRows1 > 0 && affectedRows0 > 0;
         }

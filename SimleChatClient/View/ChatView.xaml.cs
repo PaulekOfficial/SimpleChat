@@ -4,6 +4,7 @@ using System.Windows.Input;
 using ChatClientGUI.Models.Model;
 using ChatClientGUI.Models.ViewModel;
 using SimpleChatClient;
+using SimpleChatProtocol;
 
 namespace ChatClientGUI.View;
 
@@ -31,6 +32,12 @@ public partial class ChatView : UserControl
         if (listBox == null || listBox.SelectedItem == null) return;
 
         viewModel.ActiveContactModel = listBox.SelectedItem as ContactModel;
+
+        var fetchMessages = new FetchGroupMessagesPacket();
+        fetchMessages.GroupId = viewModel.ActiveContactModel.Uuid;
+        fetchMessages.UserId = _client.Uuid;
+        
+        _client.ChannelHandler.SendPacket(fetchMessages);
     }
 
     private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
@@ -39,7 +46,8 @@ public partial class ChatView : UserControl
 
         var viewModel = DataContext as ChatViewModel;
         if (viewModel == null) return;
-        _client.ChannelHandler.SendChatMessage(viewModel.Message);
+        if (viewModel.ActiveContactModel == null) return;
+        _client.ChannelHandler.SendChatMessage(viewModel.Message, viewModel.ActiveContactModel.Uuid);
         viewModel.Message = string.Empty;
         viewModel.SendCommand();
 

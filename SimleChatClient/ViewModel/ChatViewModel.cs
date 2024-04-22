@@ -11,6 +11,13 @@ public class ChatViewModel : ObservableObject
 {
     private ContactModel? _activeContactModel;
     private readonly Client _client = ClientFactory.GetClientInstance();
+    
+    public string _nickname;
+    public string _status;
+    public string _avatar;
+    public string _chatWith;
+    public string Message { get; set; }
+    public ObservableCollection<ContactModel> Contacts { get; set; }
 
     public ChatViewModel()
     {
@@ -27,21 +34,16 @@ public class ChatViewModel : ObservableObject
         _client.ChannelHandler.GetPacketManager()
             .RegisterHandler<ServerSidePackets.ClientContactPacket>(0x1A, HandleClientContactPacket);
         
+        _client.ChannelHandler.GetPacketManager()
+            .RegisterHandler<ServerSidePackets.ClientStatusPacket>(0x1D, HandleClientStatusPacket);
+        
         _client.FetchContacts();
     }
 
-    public string Nickname { get; set; }
-    public string Message { get; set; }
-    public ObservableCollection<ContactModel> Contacts { get; set; }
-
-    public ContactModel? ActiveContactModel
+    public void HandleClientStatusPacket(ServerSidePackets.ClientStatusPacket packet, EventArgs eventArgs)
     {
-        get => _activeContactModel;
-        set
-        {
-            _activeContactModel = value;
-            OnPropertyChanged();
-        }
+        Avatar = packet.Avatar;
+        Status = packet.Status;
     }
 
     public void HandleTextMessagePacket(ServerSidePackets.TextChatMessageHistoryPacket historyPacket,
@@ -51,7 +53,7 @@ public class ChatViewModel : ObservableObject
         {
             foreach (var contact in Contacts)
             {
-                if (contact.Uuid != historyPacket.Uuid) continue;
+                if (contact.Uuid != historyPacket.GroupId) continue;
 
                 contact.Messages.Add(new MessageModel
                 {
@@ -82,6 +84,59 @@ public class ChatViewModel : ObservableObject
                 Avatar = packet.Avatar
             });
         });
+    }
+    
+    public string Nickname
+    {
+        get => _nickname;
+        set
+        {
+            _nickname = value;
+            OnPropertyChanged(nameof(Nickname));
+        }
+    }
+    
+    public ContactModel? ActiveContactModel
+    {
+        get => _activeContactModel;
+        set
+        {
+            _activeContactModel = value;
+            OnPropertyChanged();
+            
+            if (value == null) return;
+            ChatWith = value.Username;
+        }
+    }
+    
+    public string Status
+    {
+        get => _status;
+        set
+        {
+            _status = value;
+            OnPropertyChanged(nameof(Status));
+        }
+    }
+    
+    public string Avatar
+    {
+        get => _avatar;
+        set
+        {
+            _avatar = value;
+            OnPropertyChanged(nameof(Avatar));
+        }
+    }
+    
+    public string ChatWith
+    {
+        get => _chatWith;
+        set
+        {
+            _chatWith = "Chat with " + value;
+            OnPropertyChanged(nameof(ChatWith));
+        }
     }
 
     ~ChatViewModel()

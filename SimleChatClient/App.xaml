@@ -10,7 +10,7 @@
                 <ResourceDictionary Source="./Theme/MessageBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <BitmapImage x:Key="SmileEmoji" UriSource="..\Icons\smile-icon-1024x1024-g1j4n4ie.png" />
+            <BitmapImage x:Key="SmileEmoji" UriSource="Icons\smile-icon-1024x1024-g1j4n4ie.png" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
