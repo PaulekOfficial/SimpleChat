@@ -41,6 +41,9 @@ public class ServerHandler : ChannelHandlerAdapter
         
         PacketManager.RegisterPacket<RegisterRequestPacket>(0x12);
         PacketManager.RegisterHandler<RegisterRequestPacket>(0x12, HandleRegisterRequestPacket);
+        
+        PacketManager.RegisterPacket<UsernameCheckRequestPacket>(0x13);
+        PacketManager.RegisterHandler<UsernameCheckRequestPacket>(0x13, HandleUsernameCheckRequestPacket);
     }
 
     private void Handle()
@@ -91,38 +94,80 @@ public class ServerHandler : ChannelHandlerAdapter
     
     public void HandleLoginRequestPacket(LoginRequestPacket packet, EventArgs args)
     {
-        // if (loginRequest.Username.Length > 25)
-        // {
-        //     var loginDisconnect = new ServerSidePackets.LoginDisconnect();
-        //     loginDisconnect.Reason =
-        //         $"Your nickname is to long {loginRequest.Username}, max nick length 25 characters!";
-        //
-        //     Writer.WritePacket(loginDisconnect);
-        //     Writer.Flush(Context);
-        //     Context.Channel.CloseAsync();
-        //     return;
-        // }
+        var user = _server.GetClientByUsername(packet.Login.ToLower());
+        if (user == null)
+        {
+            var userNotExistsPacket = new ServerSidePackets.LoginFailedPacket();
+            userNotExistsPacket.Reason = "User does not exists!";
+            Writer.WritePacket(userNotExistsPacket);
+            Writer.Flush(Context);
+            return;
+        }
         
-        // _username = loginRequest.Username;
-        // _uuid = Guid.NewGuid();
-        //
-        // var loginSuccess = new ServerSidePackets.LoginSuccess();
-        // loginSuccess.Username = _username;
-        // loginSuccess.Uuid = _uuid;
-        //
-        // Writer.WritePacket(loginSuccess);
-        // Writer.Flush(Context);
-        //
-        // var client = new Client(_uuid, _username, this);
-        // _server.Clients.Add(_uuid, client);
+        if (!BCrypt.Net.BCrypt.Verify(packet.Password, user.Password))
+        {
+            var loginFailedBadPassword = new ServerSidePackets.LoginFailedPacket();
+            loginFailedBadPassword.Reason = "Bad login or password!";
+            Writer.WritePacket(loginFailedBadPassword);
+            Writer.Flush(Context);
+            return;
+        }
+        
+        user.Handler = this;
+        _uuid = user.Uuid;
+        _username = user.Username;
+        
+        _server.Clients.Add(_uuid, user);
+        
+        var loginSuccess = new ServerSidePackets.LoginSuccess();
+        loginSuccess.Username = _username;
+        loginSuccess.Uuid = _uuid;
+        
+        Writer.WritePacket(loginSuccess);
+        Writer.Flush(Context);
     }
     
     public void HandleRegisterRequestPacket(RegisterRequestPacket packet, EventArgs args)
     {
+        var user = _server.GetClientByUsername(packet.Login.ToLower());
+        if (user != null)
+        {
+            return;
+        }
 
+        if (packet.Login.Length > 25)
+        {
+            return;
+        }
+
+        var client = new Client(Guid.NewGuid(), packet.Login.ToLower(), packet.Password, null);
+        client.EncryptPassword();
+        
+        _server.GetClientCache().Add(client.Uuid, client);
     }
+    
+    public void HandleUsernameCheckRequestPacket(UsernameCheckRequestPacket packet, EventArgs args)
+    {
+        var user = _server.GetClientByUsername(packet.Username.ToLower());
+        if (user == null)
+        {
+            var usernameCheckResponse = new ServerSidePackets.UsernameCheckResponsePacket();
+            usernameCheckResponse.Username = packet.Username;
+            usernameCheckResponse.Exists = true;
 
-    //TODO load user data from databse
+            Writer.WritePacket(usernameCheckResponse);
+            Writer.Flush(Context);
+            return;
+        }
+        
+        var usernameCheckResponse2 = new ServerSidePackets.UsernameCheckResponsePacket();
+        usernameCheckResponse2.Username = packet.Username;
+        usernameCheckResponse2.Exists = false;
+
+        Writer.WritePacket(usernameCheckResponse2);
+        Writer.Flush(Context);
+    }
+    
     private void HandlePlay()
     {
         WaitForPacket();

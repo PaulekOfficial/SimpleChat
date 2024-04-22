@@ -18,7 +18,7 @@ public class Server
 
     //TODO: Implement multiserver support
     public string DATABASE_CONNECTION_STRING =
-        "Server=mail.paulek.pro;Database=chat;User=superpaulek;Password=Yrhzmudg@1;";
+        "Server=192.168.3.241;Database=chat;User=superpaulek;Password=Yrhzmudg@1;";
 
     public Server()
     {
@@ -35,8 +35,7 @@ public class Server
 
         Certificate2 = new X509Certificate2(Path.Combine("", "dotnetty.com.pfx"), "password");
     }
-
-    //TODO new cache system
+    
     public Dictionary<Guid, Client> Clients { get; set; } = new();
 
     public X509Certificate2 Certificate2 { get; set; }
@@ -122,5 +121,10 @@ public class Server
     public Client? GetClientByUuid(Guid uuid)
     {
         return _clientCache.Get(uuid);
+    }
+    
+    public ClientCache GetClientCache()
+    {
+        return _clientCache;
     }
 }

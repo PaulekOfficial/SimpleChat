@@ -260,4 +260,76 @@ public class ServerSidePackets
             GC.SuppressFinalize(this);
         }
     }
+    
+    public class UsernameCheckResponsePacket : IPacket
+    {
+        public string Username { get; set; }
+        public Boolean Exists { get; set; }
+
+
+        public byte PacketId()
+        {
+            return 0x1B;
+        }
+
+        public PacketDirection Direction()
+        {
+            return PacketDirection.ServerBound;
+        }
+
+        public void Parse(IByteBuffer byteBuffer)
+        {
+            var usernameLength = byteBuffer.ReadInt();
+            Username = byteBuffer.ReadString(usernameLength, Encoding.Default);
+
+            Exists = byteBuffer.ReadBoolean();
+        }
+
+        public void Serialize(IByteBuffer byteBuffer)
+        {
+            byteBuffer.WriteInt(Username.Length);
+            byteBuffer.WriteString(Username, Encoding.Default);
+
+            byteBuffer.WriteBoolean(Exists);
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
+    }
+    
+    public class LoginFailedPacket : IPacket
+    {
+        public string Reason { get; set; }
+
+        public byte PacketId()
+        {
+            return 0x1C;
+        }
+
+        public PacketDirection Direction()
+        {
+            return PacketDirection.ServerBound;
+        }
+
+        public void Parse(IByteBuffer byteBuffer)
+        {
+            var reasonLength = byteBuffer.ReadInt();
+            Reason = byteBuffer.ReadString(reasonLength, Encoding.Default);
+        }
+
+        public void Serialize(IByteBuffer byteBuffer)
+        {
+            byteBuffer.WriteInt(Reason.Length);
+            byteBuffer.WriteString(Reason, Encoding.Default);
+        }
+
+        public void Dispose()
+        {
+            Reason = "";
+
+            GC.SuppressFinalize(this);
+        }
+    }
 }

@@ -102,6 +102,8 @@ public class Handshake : IPacket
 
 public class LoginStartRequest : IPacket
 {
+    public string UUID { get; set; }
+    
     public byte PacketId()
     {
         return 0x0A;
@@ -114,10 +116,14 @@ public class LoginStartRequest : IPacket
 
     public void Parse(IByteBuffer byteBuffer)
     {
+        var uuidLength = byteBuffer.ReadInt();
+        UUID = byteBuffer.ReadString(uuidLength, Encoding.Default);
     }
 
     public void Serialize(IByteBuffer byteBuffer)
     {
+        byteBuffer.WriteInt(UUID.Length);
+        byteBuffer.WriteString(UUID, Encoding.Default);
     }
 
     public void Dispose()
@@ -320,6 +326,38 @@ public class RegisterRequestPacket : IPacket
         
         byteBuffer.WriteInt(Password.Length);
         byteBuffer.WriteString(Password, Encoding.Default);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class UsernameCheckRequestPacket : IPacket
+{
+    public String Username { get; set; }
+
+    public byte PacketId()
+    {
+        return 0x13;
+    }
+
+    public PacketDirection Direction()
+    {
+        return PacketDirection.ClientBound;
+    }
+
+    public void Parse(IByteBuffer byteBuffer)
+    {
+        var loginLength = byteBuffer.ReadInt();
+        Username = byteBuffer.ReadString(loginLength, Encoding.Default);
+    }
+
+    public void Serialize(IByteBuffer byteBuffer)
+    {
+        byteBuffer.WriteInt(Username.Length);
+        byteBuffer.WriteString(Username, Encoding.Default);
     }
 
     public void Dispose()

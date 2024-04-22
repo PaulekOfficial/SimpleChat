@@ -8,6 +8,8 @@ public class PacketManager
     private readonly Dictionary<byte, Type> _packets = new();
 
     private readonly PacketReader _reader;
+    
+    private readonly object _lock = new object();
 
     public PacketManager()
     {
@@ -31,23 +33,44 @@ public class PacketManager
 
         await Task.Factory.StartNew(() =>
         {
-            foreach (var dic in _handlers)
+            lock (_lock)
             {
-                if (dic.Key != packet.PacketId()) continue;
+                foreach (var dic in _handlers)
+                {
+                    if (dic.Key != packet.PacketId()) continue;
 
-                dic.Value.DynamicInvoke(packet, eventArgs);
+                    dic.Value.DynamicInvoke(packet, eventArgs);
+                }
             }
         });
     }
 
     public void RegisterHandler<T>(byte packetId, PacketHandler<T> handler) where T : IPacket
     {
-        _handlers.Add(packetId, handler);
+        Task.Factory.StartNew(() =>
+        {
+            lock (_lock)
+            {
+                if (_handlers.ContainsKey(packetId))
+                {
+                    _handlers[packetId] = handler;
+                    return;
+                }
+
+                _handlers.Add(packetId, handler);
+            }
+        });
     }
 
     public void UnregisterHandler(byte packetId)
     {
-        _handlers.Remove(packetId);
+        Task.Factory.StartNew(() =>
+        {
+            lock (_lock)
+            {
+                _handlers.Remove(packetId);
+            }
+        });
     }
 
     public void RegisterPacket<T>(byte packetId) where T : IPacket

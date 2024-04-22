@@ -26,6 +26,8 @@ public class ChatViewModel : ObservableObject
             .RegisterHandler<ServerSidePackets.TextChatMessageHistoryPacket>(0x0F, HandleTextMessagePacket);
         _client.ChannelHandler.GetPacketManager()
             .RegisterHandler<ServerSidePackets.ClientContactPacket>(0x1A, HandleClientContactPacket);
+        
+        _client.FetchContacts();
     }
 
     public string Nickname { get; set; }

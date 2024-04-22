@@ -30,6 +30,7 @@ public class Client
     public string BindAddress { get; }
     public int BindPort { get; }
     public string Nickname { get; set; }
+    public Guid Uuid { get; set; }
     public Task NetworkTask { get; set; }
     public X509Certificate2 Certificate2 { get; set; }
 
@@ -72,5 +73,10 @@ public class Client
         {
             Group.ShutdownGracefullyAsync().Wait(1000);
         }
+    }
+
+    public void FetchContacts()
+    {
+        ChannelHandler.FetchContacts();
     }
 }

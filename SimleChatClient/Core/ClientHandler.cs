@@ -1,4 +1,7 @@
-﻿using DotNetty.Buffers;
+﻿using System.Windows;
+using ChatClientGUI.Models.ViewModel;
+using ChatClientGUI.View;
+using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
 using SimpleChatProtocol;
 using static SimpleChatProtocol.ServerSidePackets;
@@ -30,6 +33,11 @@ public class ClientHandler : ChannelHandlerAdapter
         _packetManager = new PacketManager();
         _packetManager.RegisterPacket<TextChatMessageHistoryPacket>(0x0F);
         _packetManager.RegisterPacket<ClientContactPacket>(0x1A);
+        _packetManager.RegisterPacket<UsernameCheckResponsePacket>(0x1B);
+        _packetManager.RegisterPacket<LoginSuccess>(0x0D);
+        _packetManager.RegisterPacket<LoginFailedPacket>(0x1C);
+        
+        _packetManager.RegisterHandler<LoginSuccess>(0x0D, HandleLoginSuccess);
     }
 
     private void Handle()
@@ -46,7 +54,7 @@ public class ClientHandler : ChannelHandlerAdapter
         _writer.Flush(_context);
 
         var loginRequest = new LoginStartRequest();
-        //loginRequest.Username = _client.Nickname;
+        loginRequest.UUID = Guid.NewGuid().ToString();
 
         _writer.WritePacket(loginRequest);
         _writer.Flush(_context);
@@ -62,18 +70,33 @@ public class ClientHandler : ChannelHandlerAdapter
 
         _writer.WritePacket(encryptionResponse);
         _writer.Flush(_context);
+    }
 
-        WaitForPacket();
-        var loginSuccess = (LoginSuccess)_reader.ParsePacket(_packets, new LoginSuccess());
-        _packets.RemoveRange(0, 1);
+    public void HandleLoginSuccess(LoginSuccess packet, EventArgs args)
+    {
+        _client.Uuid = packet.Uuid;
+        _client.Nickname = packet.Username;
+        
+        Console.WriteLine($"Podłączono do serwera - id: {packet.Uuid}");
+        Console.WriteLine($"Zalogowano username - nick: {packet.Username}");
+        
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            string messageBoxText2 = "Logowanie pomyślne. Po zatwierdzeniu zostaniesz przeniesiony do czatu.";
+            string caption2 = "System Logowania";
+            MessageBox.Show(messageBoxText2, caption2, MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.Yes);
+            
+            var mainDataContext = Application.Current.MainWindow.DataContext as MainViewModel;
+            if (mainDataContext == null) return;
 
-        Console.WriteLine($"Podłączono do serwera - id: {loginSuccess.Uuid}");
-        Console.WriteLine($"Zalogowano username - nick: {loginSuccess.Username}");
-
-
-        // Send a request to the server to get the contacts
+            mainDataContext.SelectedViewModel = new ChatView();
+        });
+    }
+    
+    public void FetchContacts()
+    {
         var contactsPacket = new FetchContactsPacket();
-        contactsPacket.Uuid = loginSuccess.Uuid;
+        contactsPacket.Uuid = _client.Uuid;
         SendPacket(contactsPacket);
     }
 

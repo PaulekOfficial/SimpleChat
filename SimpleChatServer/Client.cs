@@ -8,11 +8,12 @@ public class Client
     {
     }
 
-    public Client(Guid uuid, string username, ServerHandler handler)
+    public Client(Guid uuid, string username, string password, ServerHandler handler)
     {
         Uuid = uuid;
         Handler = handler;
         Username = username;
+        Password = password;
         Status = "Online";
         ChatStatus = ChatStatus.Active;
         JoinedAt = DateTime.Now;

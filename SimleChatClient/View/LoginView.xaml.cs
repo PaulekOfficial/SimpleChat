@@ -11,6 +11,32 @@ public partial class LoginView : UserControl
     {
         InitializeComponent();
     }
+    
+    private void TextBox_UsernameChanged(object sender, TextChangedEventArgs e)
+    {
+        var textBox = sender as TextBox;
+        if (textBox != null)
+        {
+            var viewModel = DataContext as LoginViewModel;
+            if (viewModel != null)
+            {
+                viewModel.UsernameChanged(textBox, e);
+            }
+        }
+    }
+    
+    private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        var passwordBox = sender as PasswordBox;
+        if (passwordBox != null)
+        {
+            var viewModel = DataContext as LoginViewModel;
+            if (viewModel != null)
+            {
+                viewModel.PasswordChanged(passwordBox, e);
+            }
+        }
+    }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {

@@ -28,9 +28,10 @@
                          BorderThickness="1" PasswordChanged="PasswordConfirmBox_PasswordChanged" />
             
             <Button Margin="0,20,0,0" Content="Register" Width="200" Padding="10" Background="DarkBlue"
-                    Foreground="White" BorderThickness="0" Command="{Binding RegisterCommand}" CommandParameter="{Binding ElementName=PasswordBox}" />
+                    Foreground="White" BorderThickness="0" Command="{Binding RegisterCommand}" 
+                    CommandParameter="{Binding ElementName=PasswordBox}" IsEnabled="{Binding IsButtonEnabled}" />
             <Button Margin="0,20,0,0" Content="Login" Width="200" Padding="10" Background="DarkBlue" Foreground="White"
-                    BorderThickness="0" Click="LoginCommand" />
+                    BorderThickness="0" Click="LoginCommand" IsEnabled="{Binding IsButtonEnabled}" />
         </StackPanel>
     </Grid>
 </UserControl>
